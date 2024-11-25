@@ -42,37 +42,44 @@ document.getElementById('partForm').addEventListener('submit', (e) => {
         return;
     }
 
-    // הצגת תוצאות ב-Accordion
+    // פתיחת המודל מיד עם Spinner
+    const modal = new bootstrap.Modal(document.getElementById('accordionModal'));
+    modal.show();
+
     const accordionResults = document.getElementById('accordionFlushResults');
-    accordionResults.innerHTML = partNumbers.map((part, index) => `
-        <div class="accordion-item">
-            <h2 class="accordion-header" id="flush-heading${index}">
-                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapse${index}" aria-expanded="false" aria-controls="flush-collapse${index}">
-                    Part Number: ${part}
-                </button>
-            </h2>
-            <div id="flush-collapse${index}" class="accordion-collapse collapse" aria-labelledby="flush-heading${index}" data-bs-parent="#accordionFlushResults">
-                <div class="accordion-body">
-                    <p>Fetching details for <strong>${part}</strong>...</p>
+    const loadingSpinner = document.getElementById('loadingSpinner');
+    
+    // הצגת Spinner במודל
+    accordionResults.style.display = 'none'; // הסתר את האקורדיון
+    loadingSpinner.style.display = 'block'; // הצג את ה-Spinner
+
+    // סימולציה של עיבוד נתונים
+    setTimeout(() => {
+        // הסתרת Spinner והצגת התוצאות
+        loadingSpinner.style.display = 'none'; // הסתר את ה-Spinner
+        accordionResults.style.display = 'block'; // הצג את האקורדיון
+
+        // יצירת התוצאות באקורדיון
+        accordionResults.innerHTML = partNumbers.map((part, index) => `
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="flush-heading${index}">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapse${index}" aria-expanded="false" aria-controls="flush-collapse${index}">
+                        Part Number: ${part}
+                    </button>
+                </h2>
+                <div id="flush-collapse${index}" class="accordion-collapse collapse" aria-labelledby="flush-heading${index}" data-bs-parent="#accordionFlushResults">
+                    <div class="accordion-body">
+                        <ul>
+                            <li>Average Price: $100</li>
+                            <li>Min Price: $80</li>
+                            <li>Max Price: $120</li>
+                            <li>Availability: In Stock</li>
+                            <li>Manufacturer: Example Manufacturer</li>
+                            <li>Lifecycle: Active</li>
+                        </ul>
+                    </div>
                 </div>
             </div>
-        </div>
-    `).join('');
-
-    // סימולציה של ניתוח נתונים
-    setTimeout(() => {
-        partNumbers.forEach((part, index) => {
-            const accordionBody = document.querySelector(`#flush-collapse${index} .accordion-body`);
-            accordionBody.innerHTML = `
-                <ul>
-                    <li>Average Price: $100</li>
-                    <li>Min Price: $80</li>
-                    <li>Max Price: $120</li>
-                    <li>Availability: In Stock</li>
-                    <li>Manufacturer: Example Manufacturer</li>
-                    <li>Lifecycle: Active</li>
-                </ul>
-            `;
-        });
+        `).join('');
     }, 2000); // דיליי של 2 שניות לדימוי עיבוד נתונים
 });

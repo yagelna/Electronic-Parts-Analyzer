@@ -50,11 +50,36 @@
             <div class="text-center">
                 <button id="analyzeButton" class="btn btn-success">Analyze</button>
             </div>
-            
         </form>
 
-        <!-- אזור להצגת תוצאות -->
-        <div class="accordion accordion-flush mt-5 aligned-center" id="accordionFlushResults"></div>
+    </div>
+
+    <!-- מבנה המודל -->
+    <div class="modal fade" id="accordionModal" tabindex="-1" aria-labelledby="accordionModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="accordionModalLabel">Accordion in Modal</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Spinner -->
+                    <div class="text-center my-3" id="loadingSpinner">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p>Please wait, analyzing data...</p>
+                    </div>
+                
+                    <!-- Accordion -->
+                    <div class="accordion accordion-flush" id="accordionFlushResults" style="display: none;"></div>
+                </div>
+                
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <div class="modal fade" id="demoModal" tabindex="-1" aria-labelledby="demoModalLabel" aria-hidden="true">
