@@ -1,19 +1,16 @@
 const demoModal = new bootstrap.Modal(document.getElementById('demoModal'));
 demoModal.show();
 
-// עדכון בזמן אמת של מק"טים בתיבת הטקסט
+// 
 const textarea = document.getElementById('partNumbersInput');
 const preview = document.getElementById('preview');
-
+// event listener to input event
 textarea.addEventListener('input', () => {
-    // קבלת הטקסט שהוזן ופיצול לפי רווחים
     const text = textarea.value.trim();
-    const parts = text.split(/\s+/).filter(Boolean); // מחיקת ריקים
+    const parts = text.split(/\s+/).filter(Boolean); // split by spaces and remove empty strings
 
-    // ניקוי תצוגה קיימת
     preview.innerHTML = '';
-
-    // יצירת אלמנטים מעוצבים לכל מק"ט
+    // create a badge for each part
     parts.forEach(part => {
         const span = document.createElement('span');
         span.textContent = part;
@@ -22,45 +19,50 @@ textarea.addEventListener('input', () => {
     });
 });
 
-// טיפול באירוע שליחת הטופס
-document.getElementById('partForm').addEventListener('submit', (e) => {
-    e.preventDefault(); // מניעת רענון ברירת מחדל של הטופס
+// event listener to form submit
+document.getElementById('partForm').addEventListener('submit', async (e) => {
+    e.preventDefault(); 
 
-    // איסוף המקטים מתיבת הטקסט
-    const inputText = document.getElementById('partNumbersInput').value.trim();
+    const inputText = document.getElementById('partNumbersInput').value.trim(); 
     if (!inputText) {
         alert("Please enter at least one part number.");
         return;
     }
+    const partNumbers = Array.from(new Set(inputText.split(/\s+/))); // split by spaces and remove duplicates
 
-    // פיצול המקטים לפי רווחים והסרת כפילויות וריקים
-    const partNumbers = Array.from(new Set(inputText.split(/\s+/)));
-
-    // בדיקה אם יש מק"טים
     if (partNumbers.length === 0) {
         alert("No valid part numbers found.");
         return;
     }
 
-    // פתיחת המודל מיד עם Spinner
+    // show modal and loading spinner
     const modal = new bootstrap.Modal(document.getElementById('accordionModal'));
     modal.show();
-
     const accordionResults = document.getElementById('accordionFlushResults');
     const loadingSpinner = document.getElementById('loadingSpinner');
-    
-    // הצגת Spinner במודל
-    accordionResults.style.display = 'none'; // הסתר את האקורדיון
-    loadingSpinner.style.display = 'block'; // הצג את ה-Spinner
+    accordionResults.style.display = 'none';
+    loadingSpinner.style.display = 'block';
 
-    // סימולציה של עיבוד נתונים
-    setTimeout(() => {
-        // הסתרת Spinner והצגת התוצאות
-        loadingSpinner.style.display = 'none'; // הסתר את ה-Spinner
-        accordionResults.style.display = 'block'; // הצג את האקורדיון
+    // send partNumbers to server and get response
+    try {
+        const response = await fetch('http://127.0.0.1:5000/query', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'x-app-key':  'FLYagel',
+            },
+            body: JSON.stringify({ partNumbers }),
+        });
+        if (!response.ok) {
+            throw new Error('Failed to fetch data from server.');
+        }
+        const serverResponse = await response.json();
+        console.log("Real server response:")
+        console.log(serverResponse);
+        loadingSpinner.style.display = 'none'; 
+        accordionResults.style.display = 'block'; 
 
-        // יצירת התוצאות באקורדיון
-        accordionResults.innerHTML = partNumbers.map((part, index) => `
+        accordionResults.innerHTML = Object.entries(serverResponse).map(([part, details], index) => `
             <div class="accordion-item">
                 <h2 class="accordion-header" id="flush-heading${index}">
                     <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapse${index}" aria-expanded="false" aria-controls="flush-collapse${index}">
@@ -70,16 +72,26 @@ document.getElementById('partForm').addEventListener('submit', (e) => {
                 <div id="flush-collapse${index}" class="accordion-collapse collapse" aria-labelledby="flush-heading${index}" data-bs-parent="#accordionFlushResults">
                     <div class="accordion-body">
                         <ul>
-                            <li>Average Price: $100</li>
-                            <li>Min Price: $80</li>
-                            <li>Max Price: $120</li>
-                            <li>Availability: In Stock</li>
-                            <li>Manufacturer: Example Manufacturer</li>
-                            <li>Lifecycle: Active</li>
+                            <li><strong>Availability:</strong> ${details.availability.status} (${details.availability.scope})</li>
+                            <li><strong>Description:</strong> ${details.availability.description}</li>
+
+                            <li><strong>Average Price:</strong> ${details.average_price}</li>
+                            <li><strong>Min Price:</strong> ${details.min_price}</li>
+                            <li><strong>Max Price:</strong> ${details.max_price}</li>
+                            <li><strong>Production Start:</strong> ${details.production_start}</li>
+                            <li><strong>Production Status:</strong> ${details.production_status}</li>
+                            <li><strong>Discontinued Date:</strong> ${details.discontinued_date ? details.discontinued_date : 'N/A'}</li>
+                            <li><strong>Alternatives:</strong> ${details.alternatives}</li>
+                            <li><strong>Additional Details:</strong> ${details.additional_details}</li>
                         </ul>
                     </div>
                 </div>
             </div>
         `).join('');
-    }, 2000); // דיליי של 2 שניות לדימוי עיבוד נתונים
+    } catch (error) {
+        console.error("Error:", error);
+        alert("Failed to fetch data from server.");
+        loadingSpinner.style.display = 'none';
+        accordionResults.innerHTML = '<p class="text-danger">Failed to fetch data from server. Please try again later.</p>';
+    }
 });
